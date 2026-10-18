@@ -1066,7 +1066,7 @@
        * API ENDPOINT
        * ============================================================ */
       const API_URL =
-        "https://script.google.com/macros/s/AKfycbyh1HV4YMv186PUAoZIB6xYEwOoXZA8dUSliyZEIj00EMoXqla2sdHWGjx067YbrQbq/exec";
+        "https://script.google.com/macros/s/AKfycbyMTMWd4w-BIBEUY0UQajNog8WlEv0NEZ85ad1Tl30yVpBDDaEVQT7QwVUONIEKIZSX/exec";
 
       /* ============================================================
        * CONFIG
@@ -1171,7 +1171,7 @@
           home: "Home",
           registration: "Registration",
           checkStatus: "Check Status",
-          adminLogin: "Admin Login",
+          adminLogin: "Login",
           adminName: "Admin Name",
           dashboard: "Dashboard",
           logout: "Logout",
@@ -1492,7 +1492,7 @@
           home: "হোম",
           registration: "নিবন্ধন",
           checkStatus: "স্ট্যাটাস চেক",
-          adminLogin: "অ্যাডমিন লগইন",
+          adminLogin: "লগইন",
           adminName: "অ্যাডমিনের নাম",
           dashboard: "ড্যাশবোর্ড",
           logout: "লগআউট",
@@ -2478,15 +2478,29 @@
         // Start home countdown timers
         if (State.currentPage === "home") {
           setTimeout(function () {
-            // Parse event date (assume 8:00 AM)
             const parsedDate = parseDateValue(State.settings.Event_Date || "");
             let eventTime = 0;
             if (parsedDate) {
-              parsedDate.setHours(8, 0, 0, 0);
+              let startHour = 8;
+              let startMin = 0;
+              const startTimeStr =
+                State.settings.Event_Start_Time || "08:00 AM";
+              const timeMatch = startTimeStr.match(
+                /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i,
+              );
+
+              if (timeMatch) {
+                startHour = parseInt(timeMatch[1], 10);
+                startMin = parseInt(timeMatch[2], 10);
+                const ampm = timeMatch[3].toUpperCase();
+                if (ampm === "PM" && startHour !== 12) startHour += 12;
+                if (ampm === "AM" && startHour === 12) startHour = 0;
+              }
+
+              parsedDate.setHours(startHour, startMin, 0, 0);
               eventTime = parsedDate.getTime();
             }
 
-            // Parse deadline (assume 11:59 PM)
             const deadlineParsed = parseDateValue(
               State.settings.Registration_Deadline || "",
             );
@@ -2628,27 +2642,29 @@
 
             <!-- Footer -->
             <div>
-                <section class="max-w-4xl mx-auto px-4 pb-4">
-                    <div class="card p-3 bg-white bg-opacity-95 shadow-md">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-headset text-blue-600 text-sm"></i></div>
-                                <div>
-                                    <h2 class="font-bold text-sm text-gray-800">${t("contactInfo")}</h2>
-                                </div>
+                <footer class="text-white py-4 text-xs" style="background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%);">
+                    <!-- Row for 2 columns (md:flex-row for desktop, flex-col for mobile) -->
+                    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                        
+                        <!-- Left Column: Contact Information -->
+                        <div class="flex items-center gap-2 flex-wrap justify-center">
+                            <div class="w-8 h-8 bg-gray-800 bg-opacity-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-headset text-blue-400 text-sm"></i>
                             </div>
-                            <div class="flex flex-col md:flex-row items-center gap-3 md:gap-6 text-xs text-gray-700">
-                                <p><i class="fas fa-map-marker-alt mr-1 text-blue-500"></i> ${venue}</p>
-                                <p><i class="fas fa-phone mr-1 text-green-500"></i> ${contactNumber}</p>
-                                <p><i class="fas fa-envelope mr-1 text-purple-500"></i> ${contactEmail}</p>
+                            <div class="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-gray-300">
+                                <p><i class="fas fa-map-marker-alt mr-1 text-blue-400"></i> ${venue}</p>
+                                <p><i class="fas fa-phone mr-1 text-green-400"></i> ${contactNumber}</p>
+                                <p><i class="fas fa-envelope mr-1 text-purple-400"></i> ${contactEmail}</p>
                             </div>
                         </div>
-                    </div>
-                </section>
 
-                <footer class="text-white py-3 text-center text-xs" style="background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%);">
-                    <p>© ${formatNumber(currentYear)} ${eventName}</p>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Developed by <span class="text-gray-300 font-medium">Md Sojib Hossen</span></p>
+                        <!-- Right Column: Copyright & Developer -->
+                        <div class="text-center md:text-right flex-shrink-0">
+                            <p>© ${formatNumber(currentYear)} ${eventName}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Developed by <span class="text-gray-300 font-medium">Md Sojib Hossen</span></p>
+                        </div>
+                        
+                    </div>
                 </footer>
             </div>
         </div>`;
